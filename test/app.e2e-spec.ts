@@ -16,10 +16,25 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it('GET / redirects to the Swagger UI', () => {
     return request(app.getHttpServer())
       .get('/')
+      .expect(302)
+      .expect('Location', '/docs');
+  });
+
+  it('GET /health returns ok', () => {
+    return request(app.getHttpServer())
+      .get('/health')
       .expect(200)
-      .expect('Hello World!');
+      .expect((res) => {
+        if (res.body.status !== 'ok') {
+          throw new Error(`expected status "ok", got "${res.body.status}"`);
+        }
+      });
   });
 });

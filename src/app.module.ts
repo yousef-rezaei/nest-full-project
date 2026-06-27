@@ -37,21 +37,21 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       useFactory: (cfg: ConfigService) => {
         const debug = cfg.get('NODE_ENV') !== 'production';
         return {
-        transport: {
-          host: cfg.get('SMTP_HOST'),
-          port: Number(cfg.get('SMTP_PORT')),
-          secure: cfg.get('SMTP_SECURE') === 'true',
-          auth: { user: cfg.get('SMTP_USER'), pass: cfg.get('SMTP_PASS') },
-          // Verbose SMTP logging only outside production
-          logger: debug,
-          debug,
-        },
-        defaults: { from: cfg.get('MAIL_FROM') },
-        template: {
-          dir: path.join(process.cwd(), 'src', 'mail', 'templates'),
-          adapter: new EjsAdapter(),
-          options: { strict: false },
-        },
+          transport: {
+            host: cfg.get('SMTP_HOST'),
+            port: Number(cfg.get('SMTP_PORT')),
+            secure: cfg.get('SMTP_SECURE') === 'true',
+            auth: { user: cfg.get('SMTP_USER'), pass: cfg.get('SMTP_PASS') },
+            // Verbose SMTP logging only outside production
+            logger: debug,
+            debug,
+          },
+          defaults: { from: cfg.get('MAIL_FROM') },
+          template: {
+            dir: path.join(process.cwd(), 'src', 'mail', 'templates'),
+            adapter: new EjsAdapter(),
+            options: { strict: false },
+          },
         };
       },
     }),

@@ -64,9 +64,8 @@ jobs:
         run: npm run test:e2e
 
   lint:
-    name: Lint (informational)
+    name: Lint
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

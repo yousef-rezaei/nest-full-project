@@ -36,8 +36,8 @@ export class UsersService {
     if (user.avatar) {
       try {
         await unlink(join(AVATAR_UPLOAD_DIR, user.avatar));
-      } catch (_) {
-        // ignore if file not found
+      } catch {
+        // ignore if the file no longer exists
       }
     }
 
@@ -53,7 +53,9 @@ export class UsersService {
     if (user.avatar) {
       try {
         await unlink(join(AVATAR_UPLOAD_DIR, user.avatar));
-      } catch (_) {}
+      } catch {
+        // ignore if the file no longer exists
+      }
     }
 
     user.avatar = null;

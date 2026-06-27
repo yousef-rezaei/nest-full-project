@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import Codes from '../entities/codes.entity';
+import { RegisterAuthDto } from './dto/register.dto';
+import { LoginAuthDto } from './dto/login.dto';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -45,7 +47,10 @@ describe('AuthService', () => {
       usersService.findUserByEmail.mockResolvedValue({ id: 1 });
 
       await expect(
-        service.register({ email: 'taken@example.com', password: 'pw' } as any),
+        service.register({
+          email: 'taken@example.com',
+          password: 'pw',
+        } as unknown as RegisterAuthDto),
       ).rejects.toBeInstanceOf(HttpException);
       expect(usersService.createUser).not.toHaveBeenCalled();
     });
@@ -57,9 +62,12 @@ describe('AuthService', () => {
       const result = await service.register({
         email: '  NEW@Example.com ',
         password: 'pw',
-      } as any);
+      } as unknown as RegisterAuthDto);
 
-      const created = usersService.createUser.mock.calls[0][0];
+      const calls = usersService.createUser.mock.calls as Array<
+        [{ email: string; password: string }]
+      >;
+      const created = calls[0][0];
       expect(created.email).toBe('new@example.com');
       expect(created.password).not.toBe('pw'); // hashed
       expect(result).toEqual({ id: 1, first_name: 'Yo' });
@@ -71,14 +79,18 @@ describe('AuthService', () => {
       usersService.findUserByEmail.mockResolvedValue(null);
 
       await expect(
-        service.login({ email: 'missing@example.com' } as any),
+        service.login({
+          email: 'missing@example.com',
+        } as unknown as LoginAuthDto),
       ).rejects.toBeInstanceOf(HttpException);
     });
 
     it('sends an OTP when no code is supplied', async () => {
       usersService.findUserByEmail.mockResolvedValue({ id: 1, email: 'a@b.c' });
 
-      const result = await service.login({ email: 'a@b.c' } as any);
+      const result = await service.login({
+        email: 'a@b.c',
+      } as unknown as LoginAuthDto);
 
       expect(mailService.sendOtp).toHaveBeenCalledTimes(1);
       expect(codeRepo.save).toHaveBeenCalledTimes(1);

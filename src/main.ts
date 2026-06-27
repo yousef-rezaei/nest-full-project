@@ -4,7 +4,7 @@ import passport from 'passport';
 import session from 'express-session';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 // i18n CookieResolver reads the "lang" cookie
-import cookieParser = require('cookie-parser');
+import cookieParser from 'cookie-parser';
 
 import { I18nValidationPipe } from 'nestjs-i18n';
 import { ConfigService } from '@nestjs/config';
@@ -41,4 +41,4 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
   await app.listen(config.get<number>('PORT', 3000));
 }
-bootstrap();
+void bootstrap();

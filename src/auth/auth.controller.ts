@@ -66,7 +66,10 @@ export class AuthController {
           type: 'object',
           properties: {
             message: { type: 'string', example: 'Login successful' },
-            accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+            accessToken: {
+              type: 'string',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
           },
         },
         {

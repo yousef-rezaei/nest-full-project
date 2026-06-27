@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
@@ -16,10 +16,19 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it('GET / redirects to the Swagger UI', () => {
     return request(app.getHttpServer())
       .get('/')
-      .expect(200)
-      .expect('Hello World!');
+      .expect(302)
+      .expect('Location', '/docs');
+  });
+
+  it('GET /health returns ok', async () => {
+    const res = await request(app.getHttpServer()).get('/health').expect(200);
+    expect((res.body as { status: string }).status).toBe('ok');
   });
 });

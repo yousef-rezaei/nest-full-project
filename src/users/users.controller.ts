@@ -60,7 +60,7 @@ export class UsersController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid JWT.' })
   async uploadAvatar(
     @UploadedFile() file: Express.Multer.File,
-    @Request() req,
+    @Request() req: { user: { id: number } },
   ): Promise<UploadAvatarResponseDto> {
     if (!file) {
       throw new BadRequestException('Avatar file is required');
@@ -88,7 +88,9 @@ export class UsersController {
     description: 'Avatar deleted successfully.',
     type: DeleteAvatarResponseDto,
   })
-  async deleteAvatar(@Request() req): Promise<DeleteAvatarResponseDto> {
+  async deleteAvatar(
+    @Request() req: { user: { id: number } },
+  ): Promise<DeleteAvatarResponseDto> {
     const updated = await this.userService.removeAvatar(req.user.id);
     if (!updated)
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);

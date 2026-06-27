@@ -18,11 +18,11 @@ export const multerOptions: Options = {
       cb(null, AVATAR_UPLOAD_DIR);
     },
     filename: (
-      req: Request & { user?: any },
+      req: Request & { user?: { id?: number | string } },
       file: Express.Multer.File,
       cb,
     ) => {
-      const userId = (req.user?.id ?? 'anon').toString();
+      const userId = String(req.user?.id ?? 'anon');
       const unique = Date.now();
       const ext = (extname(file.originalname) || '').toLowerCase();
       cb(null, `${userId}-${unique}${ext}`);

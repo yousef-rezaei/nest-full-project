@@ -1,55 +1,29 @@
-// src/mail/mail.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
   constructor(private readonly mailer: MailerService) {}
 
   async sendOtp(to: string, code: string | number, purpose = 'login') {
     try {
-      const info = await this.mailer.sendMail({
+      const info = (await this.mailer.sendMail({
         to,
-        from: process.env.MAIL_FROM, // force the verified sender
+        from: process.env.MAIL_FROM,
         subject: `Your ${purpose.toUpperCase()} code`,
         template: 'otp',
         context: { code, purpose },
-      });
-      console.log('[MAIL][OTP] sent', {
-        to,
-        messageId: info?.messageId,
-        accepted: info?.accepted,
-        rejected: info?.rejected,
-        response: info?.response,
-      });
+      })) as { messageId?: string };
+      this.logger.log(`OTP email sent to ${to} (id: ${info?.messageId})`);
     } catch (err) {
-      console.error('[MAIL][OTP] ERROR', err);
+      this.logger.error(`Failed to send OTP email to ${to}`, err as Error);
       throw err;
     }
   }
 
-  async sendPlain(to: string, subject: string, text: string) {
-    try {
-      const info = await this.mailer.sendMail({
-        to,
-        from: process.env.MAIL_FROM,
-        subject,
-        text,
-      });
-      console.log('[MAIL][PLAIN] sent', {
-        to,
-        messageId: info?.messageId,
-        accepted: info?.accepted,
-        rejected: info?.rejected,
-        response: info?.response,
-      });
-    } catch (err) {
-      console.error('[MAIL][PLAIN] ERROR', err);
-      throw err;
-    }
-  }
-
-  async sendWelcome(to: string, name?: string) {
+  async sendWelcome(to: string, name?: string): Promise<void> {
     const appName = process.env.APP_NAME ?? 'MyApp';
     const baseUrl = process.env.APP_BASE_URL ?? '#';
     const brandColor = process.env.BRAND_COLOR ?? '#4e73df';
@@ -59,8 +33,7 @@ export class MailService {
         ? baseUrl.replace(/\/$/, '') + '/dashboard'
         : '#';
 
-    // return so callers can log info if they want
-    return await this.mailer.sendMail({
+    await this.mailer.sendMail({
       to,
       from: process.env.MAIL_FROM,
       subject: `Welcome to ${appName} 👋`,

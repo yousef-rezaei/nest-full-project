@@ -20,44 +20,40 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { MailModule } from './mail/mail.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 
-// lpad data from .env file
-import * as dotenv from 'dotenv';
-dotenv.config();
-
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '../', 'static'),
     }),
-    // ⬇️ add this for uploaded files
+    // Serve uploaded files (e.g. avatars) under /uploads
     ServeStaticModule.forRoot({
       rootPath: path.join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
       exclude: ['/auth*', '/products*', '/users*', '/docs*', '/health'],
     }),
     ConfigModule.forRoot({ isGlobal: true }),
-    // ⬇️ HERE: Mailer configuration with debug logs
     MailerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (cfg: ConfigService) => ({
-        transport: {
-          host: cfg.get('SMTP_HOST'),
-          port: Number(cfg.get('SMTP_PORT')),
-          secure: cfg.get('SMTP_SECURE') === 'true',
-          auth: { user: cfg.get('SMTP_USER'), pass: cfg.get('SMTP_PASS') },
-
-          // Debugging for SMTP handshake + send result
-          logger: true,
-          debug: true,
-          // tls: { rejectUnauthorized: false }, // enable only if you see TLS trust errors
-        },
-        defaults: { from: cfg.get('MAIL_FROM') },
-        template: {
-          dir: path.join(process.cwd(), 'src', 'mail', 'templates'),
-          adapter: new EjsAdapter(),
-          options: { strict: false },
-        },
-      }),
+      useFactory: (cfg: ConfigService) => {
+        const debug = cfg.get('NODE_ENV') !== 'production';
+        return {
+          transport: {
+            host: cfg.get('SMTP_HOST'),
+            port: Number(cfg.get('SMTP_PORT')),
+            secure: cfg.get('SMTP_SECURE') === 'true',
+            auth: { user: cfg.get('SMTP_USER'), pass: cfg.get('SMTP_PASS') },
+            // Verbose SMTP logging only outside production
+            logger: debug,
+            debug,
+          },
+          defaults: { from: cfg.get('MAIL_FROM') },
+          template: {
+            dir: path.join(process.cwd(), 'src', 'mail', 'templates'),
+            adapter: new EjsAdapter(),
+            options: { strict: false },
+          },
+        };
+      },
     }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -71,15 +67,19 @@ dotenv.config();
         new AcceptLanguageResolver(),
       ],
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'password',
-      database: 'nestjs_db',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (cfg: ConfigService) => ({
+        type: 'postgres',
+        host: cfg.get('DB_HOST', 'localhost'),
+        port: Number(cfg.get('DB_PORT', 5432)),
+        username: cfg.get('DB_USERNAME', 'postgres'),
+        password: cfg.get('DB_PASSWORD', 'postgres'),
+        database: cfg.get('DB_NAME', 'nestjs_db'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        // Auto-sync schema only outside production; use migrations in prod.
+        synchronize: cfg.get('NODE_ENV') !== 'production',
+      }),
     }),
     TypeOrmModule.forFeature([Users]),
     UsersModule,

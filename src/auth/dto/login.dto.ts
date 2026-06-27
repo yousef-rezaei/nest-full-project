@@ -14,7 +14,9 @@ export class LoginAuthDto {
   // required email
   @IsEmail({}, { message: i18nValidationMessage('forms.validation.email') })
   @IsNotEmpty({
-    message: i18nValidationMessage('forms.validation.required', { field: 'Email' }),
+    message: i18nValidationMessage('forms.validation.required', {
+      field: 'Email',
+    }),
   })
   @ApiProperty({
     description: 'User email address',
@@ -27,16 +29,25 @@ export class LoginAuthDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt({
-    message: i18nValidationMessage('forms.validation.number', { field: 'Code' }),
+    message: i18nValidationMessage('forms.validation.number', {
+      field: 'Code',
+    }),
   })
   @Min(10000, {
-    message: i18nValidationMessage('forms.validation.min', { field: 'Code', min: 10000 }),
+    message: i18nValidationMessage('forms.validation.min', {
+      field: 'Code',
+      min: 10000,
+    }),
   })
   @Max(99999, {
-    message: i18nValidationMessage('forms.validation.max', { field: 'Code', max: 99999 }),
+    message: i18nValidationMessage('forms.validation.max', {
+      field: 'Code',
+      max: 99999,
+    }),
   })
   @ApiPropertyOptional({
-    description: '5-digit one-time code (enter this when verifying login). If omitted, an OTP will be emailed.',
+    description:
+      '5-digit one-time code (enter this when verifying login). If omitted, an OTP will be emailed.',
     type: Number,
     minimum: 10000,
     maximum: 99999,

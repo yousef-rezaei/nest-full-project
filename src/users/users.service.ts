@@ -24,7 +24,7 @@ export class UsersService {
 
   createUser = async (data: CreateUserDto) => {
     const user = this.user_repository.create(data);
-    await this.user_repository.save(user); // ← await this!
+    await this.user_repository.save(user);
     return user;
   };
 
@@ -36,8 +36,8 @@ export class UsersService {
     if (user.avatar) {
       try {
         await unlink(join(AVATAR_UPLOAD_DIR, user.avatar));
-      } catch (_) {
-        // ignore if file not found
+      } catch {
+        // ignore if the file no longer exists
       }
     }
 
@@ -53,7 +53,9 @@ export class UsersService {
     if (user.avatar) {
       try {
         await unlink(join(AVATAR_UPLOAD_DIR, user.avatar));
-      } catch (_) {}
+      } catch {
+        // ignore if the file no longer exists
+      }
     }
 
     user.avatar = null;

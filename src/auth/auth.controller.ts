@@ -38,7 +38,6 @@ export class AuthController {
             email: 'user@example.com',
             first_name: 'Yousef',
             last_name: 'Rezaei',
-            // ...any other fields you return
           },
         },
       },

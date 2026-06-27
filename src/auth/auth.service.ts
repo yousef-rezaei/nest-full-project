@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { LoginAuthDto } from './dto/login.dto';
 import { RegisterAuthDto } from './dto/register.dto';
 import { UsersService } from 'src/users/users.service';
@@ -7,16 +7,18 @@ import { JwtService } from '@nestjs/jwt';
 import Codes from 'src/entities/codes.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MailService } from 'src/mail/mail.service'; // ← requires MailModule
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
     @InjectRepository(Codes)
     private readonly codeRepo: Repository<Codes>,
-    private readonly mailService: MailService, // remove if you’re not using email yet
+    private readonly mailService: MailService,
   ) {}
 
   async register(dto: RegisterAuthDto) {
@@ -28,11 +30,11 @@ export class AuthService {
     dto.password = await bcrypt.hash(dto.password, 10);
     const created = await this.userService.createUser(dto);
 
+    // Welcome email is best-effort: a failure here must not fail registration.
     try {
-      await this.mailService.sendWelcome(email, (created as any)?.first_name);
+      await this.mailService.sendWelcome(email, created?.first_name);
     } catch (e) {
-      console.error('[MAIL][WELCOME] ERROR', e?.response || e?.message || e);
-      // optionally ignore or rethrow based on your policy
+      this.logger.error('Failed to send welcome email', e as Error);
     }
 
     return created;
@@ -73,11 +75,9 @@ export class AuthService {
       is_used: false,
     });
 
-    // Send via email (comment out if not ready)
     await this.mailService.sendOtp(email, otp, 'login');
-    console.log(`OTP for ${email}: ${otp}`); // for demo only
 
-    // For production, DO NOT return the code in the response
+    // Never return the OTP in the response.
     return { message: 'Verification code sent' };
   }
 

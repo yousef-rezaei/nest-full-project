@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import passport from 'passport';
 import session from 'express-session';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-// ⬇️ i18n needs this to read the "lang" cookie
+// i18n CookieResolver reads the "lang" cookie
 import cookieParser = require('cookie-parser');
 
 import { I18nValidationPipe } from 'nestjs-i18n';

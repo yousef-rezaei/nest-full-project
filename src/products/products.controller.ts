@@ -85,7 +85,7 @@ export class ProductsController {
   ) {
     const data = await this.productsService.findOne(id);
     if (!data) throw new HttpException(i18n.t('tr.products.notFound'), 404);
-    return { message: i18n.t('tr.products.detail'), data }; // ensure you have this key in i18n
+    return { message: i18n.t('tr.products.detail'), data };
   }
 
   /** Update (auth) */

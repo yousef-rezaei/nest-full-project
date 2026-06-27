@@ -25,7 +25,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     ServeStaticModule.forRoot({
       rootPath: path.join(__dirname, '../', 'static'),
     }),
-    // ⬇️ add this for uploaded files
+    // Serve uploaded files (e.g. avatars) under /uploads
     ServeStaticModule.forRoot({
       rootPath: path.join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
